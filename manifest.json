@@ -9,9 +9,9 @@
     "permissions": [
         "storage",
         "unlimitedStorage",
+        "contextMenus",
         "cookies",
         "webRequest",
-        "webRequestBlocking",
         "activeTab",
         "scripting"
     ],
@@ -24,6 +24,22 @@
             "128": "/images/get_started128.png"
         }
     },
+    "commands": {
+        "AddItems": {
+            "suggested_key": {
+                "default": "Alt+1",
+                "mac": "Alt+1"
+            },
+            "description": "Run \"Add Items\" on the current page."
+        },
+        "DelItems": {
+            "suggested_key": {
+                "default": "Alt+2",
+                "mac": "Alt+2"
+            },
+            "description": "Run \"Del Items\" on the current page."
+        }
+    },
     "content_scripts": [
         {
             "matches": [
@@ -31,8 +47,15 @@
                 "http://erp.ilovelook.cn/*",
                 "https://erp.ilovelook.cn/*"
             ],
-            "js": ["/vendor/alertify.min.js", "/vendor/zepto.min.js", "assistant.js"],
-            "css": ["/vendor/css/alertify.min.css", "/vendor/css/semantic.min.css"],
+            "js": [
+                "/vendor/alertify.min.js",
+                "/vendor/zepto.min.js",
+                "assistant.js"
+            ],
+            "css": [
+                "/vendor/css/alertify.min.css",
+                "/vendor/css/semantic.min.css"
+            ],
             "run_at": "document_idle"
         }
     ],

@@ -7,7 +7,7 @@
     <meta name="description" content="for my beloved">
     <meta name="author" content="He Li">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    
+
     <!-- Skeleton -->
     <link rel="stylesheet" href="vendor/css/webfonts.css">
     <link rel="stylesheet" href="vendor/css/normalize.css">
@@ -16,20 +16,83 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="vendor/css/all.min.css">
 
+    <!-- Zepto JS -->
+    <script src="vendor/zepto.min.js"></script>
+
+    <!-- Alertify -->
+    <link rel="stylesheet" href="vendor/css/alertify.min.css">
+    <link rel="stylesheet" href="vendor/css/semantic.min.css">
+    <script src="vendor/alertify.min.js"></script>
+
     <link rel="icon" type="image/png" href="vendor/images/favicon.png">
 </head>
 
 <body>
     <div class="container">
         <div class="row">
-            <div class="one-half column" style="margin-top: 25%">
-                <h4>Basic Page</h4>
-                <p>This index.html page is a placeholder with the CSS, font and favicon. It's just waiting for you to
-                    add some content! If you need some help hit up the <a href="http://www.getskeleton.com">Skeleton
-                        documentation</a>.</p>
+            <div class="twelve column" style="margin-top: 5%">
+                <h3>Aimee Tool</h3>
+                <table class="u-full-width">
+                    <thead>
+                        <tr>
+                            <th>
+                                <button id="code">
+                                    <span class="icon">
+                                        <i class="fas fa-sort">Code</i>
+                                    </span>
+                                </button>
+                            </th>
+                            <th>
+                                <button id="name">
+                                    <span class="icon">
+                                        <i class="fas fa-sort">Name</i>
+                                    </span>
+                                </button>
+                            </th>
+                            <th>
+                                <button id="brand">
+                                    <span class="icon">
+                                        <i class="fas fa-sort">Brand</i>
+                                    </span>
+                                </button>
+                            </th>
+                            <th>
+                                <button>
+                                    Image
+                                </button>
+                            </th>
+                            <th>
+                                <button id="stock_all">
+                                    <span class="icon">
+                                        <i class="fas fa-sort">Stock(All)</i>
+                                    </span>
+                                </button>
+                            </th>
+                            <th>
+                                <button id="price">
+                                    <span class="icon">
+                                        <i class="fas fa-sort">Price</i>
+                                    </span>
+                                </button>
+                            </th>
+                            <th>
+                                <button id="export">
+                                    <span class="icon">
+                                        <i class="fas fa-file-export"></i>
+                                    </span>
+                                </button>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- content is here -->
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 </body>
+
+<script type="module" src="./explorer.js"></script>
 
 </html>

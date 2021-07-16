@@ -16,7 +16,7 @@
     <style>
         .menu {
             min-width: 15rem;
-            font-size: 1rem;
+            font-size: 0.8rem;
             padding: 0;
             margin: 0;
         }
@@ -44,7 +44,6 @@
 
         .menu-item>label {
             cursor: pointer;
-            padding: 0rem 2.5rem 0rem;
         }
 
         .menu-item[disabled]>label {
@@ -74,18 +73,11 @@
 </head>
 
 <body class="menu">
-    <div class="menu-item" name="New">
-        <span class="icon">
-            <i class="fas fa-cart-plus"></i>
-        </span>
-        <label>Add To Cart</label>
-    </div>
-    <div class="menu-separator">-</div>
     <div class="menu-item" name="Explorer">
         <span class="icon">
             <i class="fas fa-shopping-cart"></i>
         </span>
-        <label>View Cart</label>
+        <label>View Current Selected</label>
     </div>
     <script src="popup.js"></script>
 </body>

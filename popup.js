@@ -10,14 +10,6 @@ class PopupMenu {
         this.element = document.querySelector(selector);
     }
 
-    clickAdd(event) {
-        
-    }
-
-    clickDel(event) {
-
-    }
-
     clickExplorer(event) {
         window.open(URL_EXPLORER);
     }
@@ -37,8 +29,6 @@ class PopupMenu {
     static async render() {
         let menu = new PopupMenu('.menu');
 
-        menu.enable('Add');
-        menu.enable('Del');
         menu.enable('Explorer');
 
         $('.menu').on('click', '.menu-item', event => {

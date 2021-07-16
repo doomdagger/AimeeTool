@@ -1,4 +1,8 @@
-'use strict';
+const MESSAGE_TYPE_ADD_ITEMS = 'AddItems';
+const MESSAGE_TYPE_DEL_ITEMS = 'DelItems';
+
+const MESSAGE_TYPE_ITEMS_ADDED = 'ItemsAdded';
+const MESSAGE_TYPE_ITEMS_DELED = 'ItemsDeled';
 
 const ADD_SUCCESS = 'Successfully Add Item(s)!';
 const ADD_FAILURE = 'Failed to Add Item(s)! Contact Me!';
@@ -10,30 +14,50 @@ const DEL_FAILURE = 'Failed to Delete Item(s)! Contact Me!';
  * Class Assistant
  */
 class Assistant {
-    constructor () {
-        
+    constructor() {
+        chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+            // only service worker can send message
+            switch (request.type) {
+                case MESSAGE_TYPE_ADD_ITEMS:
+                case MESSAGE_TYPE_DEL_ITEMS:
+                    sendResponse({
+                        type: request.type,
+                        tabId: request.tabId,
+                        items: this.fetchCheckedItems()
+                    });
+                    break;
+                case MESSAGE_TYPE_ITEMS_ADDED:
+                    console.log('successfully add items');
+                    alertify.success(ADD_SUCCESS);
+                    break;
+                case MESSAGE_TYPE_ITEMS_DELED:
+                    console.log('successfully del items');
+                    alertify.success(DEL_SUCCESS);
+                    break;
+                default:
+                    break;
+            }
+        });
     }
 
     fetchCheckedItems() {
         let checkedItems = []
 
-        $('el-table__body-wrapper div').find('.el-checkbox__input .is-checked').forEach((item, index, array) => {
-            let tableRow = item.closest('.el-table__row tr').first();
-            let tableCols = tableRow.children('td');
-            
+        $('.el-table__body-wrapper div').find('.el-checkbox__input').filter('.is-checked').forEach((item, index, array) => {
+            let tableCols = $(item).closest('tr').children('td');
             // get code
-            let code = tableCols.eq(1).children('.cell div').children('div').first().text();
+            let code = tableCols.eq(1).children('div').children('div').first().text();
             // get name
-            let infoCol = tableCols.eq(2).children('.cell div');
+            let infoCol = tableCols.eq(2).children('div');
             let name = infoCol.text();
-            let brand = infoCol.children('div').eq(-2).children('span').text();
+            let brand = $(infoCol.children('div').eq(-2)).children('span').text();
             // get image url
-            let imageURL = tableCols.eq(3).find('image').attr('data-src');
+            let imageURL = tableCols.eq(3).find('img').attr('data-src');
             // inventory
-            let globalInventory = tableCols.eq(4).find('p').text();
+            let globalInventory = parseInt(tableCols.eq(4).find('p').text());
             // original price
-            let origPrice = tableCols.eq(7).find('p').last().text();
-            
+            let origPrice = parseFloat(tableCols.eq(7).find('p').last().text().match(/\d+/)[0]);
+
             checkedItems.push({
                 code: code,
                 name: name,
@@ -43,54 +67,8 @@ class Assistant {
                 origPrice: origPrice
             });
         });
-        
+
         return checkedItems;
-    }
-    
-    postAddMessage()
-    {
-        this._port.postMessage({
-            type: 'Add',
-            content: this.fetchCheckedItems()
-        })
-    }
-
-    postDelMessage()
-    {
-        this._port.postMessage({
-            type: 'Del',
-            content: this.fetchCheckedItems()
-        })
-    }
-
-    onMessage(message) {
-        
-    }
-
-    onDisconnect(port) {
-
-    }
-
-    connect() {
-        let port = this._port = chrome.runtime.connect({name : 'assistant'});
-        port.onMessage.addListener(message => this.onMessage(message));
-        port.onDisconnect.addListener(port => this.onDisconnect(port));
-        return this;
-    }
-
-    disconnect() {
-        if (this._port) {
-            this._port.disconnect();
-        }
-        return this;
-    }
-
-    open() {
-        return this.connect();
-    }
-
-    close() {
-        return this.disconnect();
     }
 
     static get instance() {
@@ -105,4 +83,7 @@ class Assistant {
     }
 }
 
-window.assistant = Assistant.setup();
+(async () => {
+    Assistant.setup();
+})();
+
