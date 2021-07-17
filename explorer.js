@@ -3,12 +3,45 @@
 class Explorer {
 
     constructor() {
-        this.getAllItems('brand');
+        this._sortKey = 'timestamp';
+        this._sortInc = true;
+
+        this.getAllItems(this._sortKey, this._sortInc);
+
+        $('th>button').on('click', event => {
+            let eventBtn = $(event.target);
+            let curSortKey = eventBtn.attr('id');
+            if (!curSortKey) {
+                eventBtn = eventBtn.closest('button');
+                curSortKey = eventBtn.attr('id');
+            }
+
+            let iconElem = eventBtn.find('i');
+            iconElem.removeClass();
+            
+            if (curSortKey == this._sortKey) {
+                this._sortInc = !this._sortInc;
+            } else {
+                $('button#' + this._sortKey).find('i').removeClass().addClass('fas fa-sort');
+                this._sortKey = curSortKey;
+                this._sortInc = true;
+            }
+            if (this._sortInc) {
+                iconElem.addClass('fas fa-sort-up');
+            } else {
+                iconElem.addClass('fas fa-sort-down');
+            }
+            this.getAllItems(this._sortKey, this._sortInc);
+        });
     }
 
-    getAllItems(sortKey) {
+    rebindClickEvent() {
+        
+    }
+
+    getAllItems(sortKey, sortInc) {
         if (sortKey == null) {
-            sortKey = 'code'
+            sortKey = 'timestamp'
         }
 
         chrome.storage.local.get(null, items => {
@@ -22,12 +55,22 @@ class Explorer {
             }
 
             sortedItems.sort((a, b) => {
-                if (a[sortKey] < b[sortKey]) {
-                    return -1;
-                } else if (a[sortKey] > b[sortKey]) {
-                    return 1;
+                if (sortInc) {
+                    if (a[sortKey] < b[sortKey]) {
+                        return -1;
+                    } else if (a[sortKey] > b[sortKey]) {
+                        return 1;
+                    } else {
+                        return 0;
+                    }
                 } else {
-                    return 0;
+                    if (a[sortKey] < b[sortKey]) {
+                        return 1;
+                    } else if (a[sortKey] > b[sortKey]) {
+                        return -1;
+                    } else {
+                        return 0;
+                    }
                 }
             });
 
@@ -47,6 +90,19 @@ class Explorer {
                     </tr>`;
                 tableBody.append(snippet);
             }
+
+            $('td>button').on('click', event => {
+                let eventBtn = $(event.target);
+                let delCode = eventBtn.attr('id');
+                if (!delCode) {
+                    eventBtn = eventBtn.closest('button');
+                    delCode = eventBtn.attr('id');
+                }
+
+                chrome.storage.local.remove(delCode, () => {
+                    eventBtn.closest('tr').remove();
+                });
+            });
         });
     }
 

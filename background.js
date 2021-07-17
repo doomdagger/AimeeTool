@@ -176,8 +176,6 @@ class Service {
                 default:
                     break;
             }
-
-            this.handleResponseFromTab(response);
         });
     }
 
@@ -195,4 +193,4 @@ class Service {
 
 setTimeout(() => {
     Service.setup();
-}, 888);
+}, 666);

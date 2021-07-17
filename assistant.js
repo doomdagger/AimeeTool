@@ -59,7 +59,8 @@ class Assistant {
                 brand: brand,
                 imageURL: imageURL,
                 globalInventory: globalInventory,
-                origPrice: origPrice
+                origPrice: origPrice,
+                timestamp: Date.now()
             });
         });
 
