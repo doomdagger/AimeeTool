@@ -6,7 +6,9 @@ class Explorer {
         this._sortKey = 'timestamp';
         this._sortInc = true;
 
-        this.getAllItems(this._sortKey, this._sortInc);
+        this.getAllItems(this._sortKey, this._sortInc, sortedItems => {
+            this.insertTableRows(sortedItems);
+        });
 
         $('th>button').on('click', event => {
             let eventBtn = $(event.target);
@@ -18,7 +20,7 @@ class Explorer {
 
             let iconElem = eventBtn.find('i');
             iconElem.removeClass();
-            
+
             if (curSortKey == this._sortKey) {
                 this._sortInc = !this._sortInc;
             } else {
@@ -31,19 +33,49 @@ class Explorer {
             } else {
                 iconElem.addClass('fas fa-sort-down');
             }
-            this.getAllItems(this._sortKey, this._sortInc);
+            this.getAllItems(this._sortKey, this._sortInc, sortedItems => {
+                this.insertTableRows(sortedItems);
+            });
+        });
+
+        $('button#export').on('click', event => {
+            this.exportExcel();
         });
     }
 
-    rebindClickEvent() {
-        
-    }
-
-    getAllItems(sortKey, sortInc) {
-        if (sortKey == null) {
-            sortKey = 'timestamp'
+    insertTableRows(sortedItems) {
+        let tableBody = $('table tbody');
+        tableBody.empty();
+        for (let i = 0; i < sortedItems.length; ++i) {
+            let item = sortedItems[i];
+            let snippet = `\
+                    <tr>
+                        <td>${item["code"]}</td>
+                        <td>${item["name"]}</td>
+                        <td>${item["brand"]}</td>
+                        <td><img height="100" data-src="${item["imageURL"]}" src="${item["imageURL"]}" lazy="loaded"></img></td>
+                        <td>${item["globalInventory"]}</td>
+                        <td>${item["origPrice"]}</td>
+                        <td><button class="button-primary" id="${item["code"]}"><span class="icon"><i class="fas fa-trash-alt"></i></span></button></td>
+                    </tr>`;
+            tableBody.append(snippet);
         }
 
+        $('td>button').on('click', event => {
+            let eventBtn = $(event.target);
+            let delCode = eventBtn.attr('id');
+            if (!delCode) {
+                eventBtn = eventBtn.closest('button');
+                delCode = eventBtn.attr('id');
+            }
+
+            chrome.storage.local.remove(delCode, () => {
+                eventBtn.closest('tr').remove();
+            });
+        });
+    }
+
+    getAllItems(sortKey, sortInc, callback) {
         chrome.storage.local.get(null, items => {
             let sortedItems = []
 
@@ -74,35 +106,32 @@ class Explorer {
                 }
             });
 
-            let tableBody = $('table tbody');
-            tableBody.empty();
+            callback(sortedItems);
+        });
+    }
+
+    exportExcel() {
+        let workbook = XLSX.utils.book_new();
+
+        this.getAllItems(this._sortKey, this._sortInc, sortedItems => {
+            let data = [['编码', '名称', '品牌', '图片', '总库存', '价格', '折扣价', '折扣率', '备注']];
             for (let i = 0; i < sortedItems.length; ++i) {
                 let item = sortedItems[i];
-                let snippet = `\
-                    <tr>
-                        <td>${item["code"]}</td>
-                        <td>${item["name"]}</td>
-                        <td>${item["brand"]}</td>
-                        <td><img height="100" data-src="${item["imageURL"]}" src="${item["imageURL"]}" lazy="loaded"></img></td>
-                        <td>${item["globalInventory"]}</td>
-                        <td>${item["origPrice"]}</td>
-                        <td><button class="button-primary" id="${item["code"]}"><span class="icon"><i class="fas fa-trash-alt"></i></span></button></td>
-                    </tr>`;
-                tableBody.append(snippet);
+                data.push([
+                    item['code'],
+                    item['name'],
+                    item['brand'],
+                    '',
+                    item['globalInventory'],
+                    item['origPrice'],
+                    '',
+                    '',
+                    ''
+                ]);
             }
-
-            $('td>button').on('click', event => {
-                let eventBtn = $(event.target);
-                let delCode = eventBtn.attr('id');
-                if (!delCode) {
-                    eventBtn = eventBtn.closest('button');
-                    delCode = eventBtn.attr('id');
-                }
-
-                chrome.storage.local.remove(delCode, () => {
-                    eventBtn.closest('tr').remove();
-                });
-            });
+            let worksheet = XLSX.utils.aoa_to_sheet(data);
+            XLSX.utils.book_append_sheet(workbook, worksheet, "选品");
+            XLSX.writeFile(workbook, '选品列表.xlsx');
         });
     }
 
