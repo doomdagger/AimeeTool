@@ -52,80 +52,131 @@ class Service {
                 this.postRequestToTab(command, tabs[0].id);
             });
         });
+
+        console.log("successfully register all listeners");
     }
 
     addItems(items, callback) {
+        if (items == null || ((items instanceof Array) && (items.length == 0))) {
+            callback(MESSAGE_TYPE_ITEMS_ADDED, false, "empty list or null item provided!");
+            return;
+        }
+
         let added = {};
 
         if (Array.isArray(items)) {
             for (let i = 0; i < items.length; ++i) {
-                added[items[i].code] = items[i];
+                if ("code" in items[i]) {
+                    added[items[i].code] = items[i];
+                } else {
+                    callback(MESSAGE_TYPE_ITEMS_ADDED, false, "invalid item provided!");
+                    return;
+                }
             }
         } else {
-            added[items.code] = items;
+            if ("code" in items) {
+                added[items.code] = items;
+            } else {
+                callback(MESSAGE_TYPE_ITEMS_ADDED, false, "invalid item provided!");
+                return;
+            }
         }
-        console.log(added);
-        chrome.storage.local.set(added, callback);
+        chrome.storage.local.set(added, () => {
+            callback(MESSAGE_TYPE_ITEMS_ADDED, true, "item(s) added successfully!");
+        });
     }
 
     delItems(items, callback) {
+        if (items == null || ((items instanceof Array) && (items.length == 0))) {
+            callback(MESSAGE_TYPE_ITEMS_DELED, false, "empty list or null item provided!");
+            return;
+        }
+
         let deleted = [];
 
         if (Array.isArray(items)) {
             for (let i = 0; i < items.length; ++i) {
-                deleted.push(items[i].code);
+                if ("code" in items[i]) {
+                    deleted.push(items[i].code);
+                } else {
+                    callback(MESSAGE_TYPE_ITEMS_DELED, false, "invalid item provided!");
+                    return;
+                }
             }
         } else {
-            deleted.push(items.code);
+            if ("code" in items) {
+                deleted.push(items.code);
+            } else {
+                callback(MESSAGE_TYPE_ITEMS_DELED, false, "invalid item provided!");
+                return;
+            }
         }
-        console.log(deleted);
-        chrome.storage.local.remove(deleted, callback);
+        chrome.storage.local.remove(deleted, () => {
+            callback(MESSAGE_TYPE_ITEMS_DELED, true, "item(s) deleted successfully!")
+        });
     }
 
     updateItem(items, callback) {
+        if (items == null || ((items instanceof Array) && (items.length == 0))) {
+            callback(MESSAGE_TYPE_ITEMS_ADDED, false, "empty list or null item provided!");
+            return;
+        }
+
         let updated = [];
 
         if (Array.isArray(items)) {
             for (let i = 0; i < items.length; ++i) {
-                updated.push(items[i].code);
+                if ("code" in items[i]) {
+                    updated.push(items[i].code);
+                } else {
+                    callback(MESSAGE_TYPE_ITEMS_ADDED, false, "invalid item provided!");
+                    return;
+                }
             }
         } else {
-            updated.push(items.code);
+            if ("code" in items[i]) {
+                updated.push(items.code);
+            } else {
+                callback(MESSAGE_TYPE_ITEMS_ADDED, false, "invalid item provided!");
+                return;
+            }
         }
 
         chrome.storage.local.get(updated, itemsKept => {
-            let newItems = []
+            let newItems = [];
 
-            for (let i = 0; i < updated.length; ++i) {
-                if (updated[i] in itemsKept) {
-                    newItems.push({ ...items[i], ...itemsKept[updated[i]] });
+            if (updated.length > 1) {
+                for (let i = 0; i < updated.length; ++i) {
+                    if (updated[i] in itemsKept) {
+                        newItems.push({ ...items[i], ...itemsKept[updated[i]] });
+                    }
                 }
+            } else {
+                newItems.push({ ...items, ...itemsKept[updated[0]] });
             }
 
             this.addItems(newItems, callback);
         });
     }
 
-    handleResponseFromTab(response) {
-        // interact with storage
-        switch (response.type) {
-            case MESSAGE_TYPE_ADD_ITEMS:
-                this.addItems(response.items, () => {
-                    chrome.tabs.sendMessage(response.tabId, { type: MESSAGE_TYPE_ITEMS_ADDED }, () => { });
-                });
-                break;
-            case MESSAGE_TYPE_DEL_ITEMS:
-                this.delItems(response.items, () => {
-                    chrome.tabs.sendMessage(response.tabId, { type: MESSAGE_TYPE_ITEMS_DELED }, () => { });
-                });
-                break;
-            default:
-                break;
-        }
-    }
-
     postRequestToTab(type, tabId) {
         chrome.tabs.sendMessage(tabId, { type: type, tabId: tabId }, response => {
+            // interact with storage
+            switch (response.type) {
+                case MESSAGE_TYPE_ADD_ITEMS:
+                    this.addItems(response.items, (type, success, message) => {
+                        chrome.tabs.sendMessage(response.tabId, { type: type, success: success, message: message }, () => { });
+                    });
+                    break;
+                case MESSAGE_TYPE_DEL_ITEMS:
+                    this.delItems(response.items, (type, success, message) => {
+                        chrome.tabs.sendMessage(response.tabId, { type: type, success: success, message: message }, () => { });
+                    });
+                    break;
+                default:
+                    break;
+            }
+
             this.handleResponseFromTab(response);
         });
     }
@@ -142,8 +193,6 @@ class Service {
     }
 }
 
-chrome.runtime.onInstalled.addListener(() => {
-    setTimeout(() => {
-        Service.setup();
-    }, 222)
-});
+setTimeout(() => {
+    Service.setup();
+}, 888);

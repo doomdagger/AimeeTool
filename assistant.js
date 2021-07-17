@@ -4,12 +4,6 @@ const MESSAGE_TYPE_DEL_ITEMS = 'DelItems';
 const MESSAGE_TYPE_ITEMS_ADDED = 'ItemsAdded';
 const MESSAGE_TYPE_ITEMS_DELED = 'ItemsDeled';
 
-const ADD_SUCCESS = 'Successfully Add Item(s)!';
-const ADD_FAILURE = 'Failed to Add Item(s)! Contact Me!';
-
-const DEL_SUCCESS = 'Successfully Delete Item(s)!';
-const DEL_FAILURE = 'Failed to Delete Item(s)! Contact Me!';
-
 /**
  * Class Assistant
  */
@@ -27,17 +21,18 @@ class Assistant {
                     });
                     break;
                 case MESSAGE_TYPE_ITEMS_ADDED:
-                    console.log('successfully add items');
-                    alertify.success(ADD_SUCCESS);
-                    break;
                 case MESSAGE_TYPE_ITEMS_DELED:
-                    console.log('successfully del items');
-                    alertify.success(DEL_SUCCESS);
+                    if (request.success) {
+                        alertify.success(request.message);
+                    } else {
+                        alertify.error(request.message);
+                    }
                     break;
                 default:
                     break;
             }
         });
+        console.log("successfully add message listener");
     }
 
     fetchCheckedItems() {
@@ -83,7 +78,4 @@ class Assistant {
     }
 }
 
-(async () => {
-    Assistant.setup();
-})();
-
+window.assistant = Assistant.setup();
